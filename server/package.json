@@ -1,0 +1,28 @@
+{
+  "name": "ord-service-server",
+  "version": "0.0.0",
+  "description": "Server of Ordering service",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jp2435"
+  },
+  "keywords": [
+    "mysql"
+  ],
+  "author": "jp2435",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "jsonwebtoken": "^8.5.1",
+    "mysql": "^2.18.1"
+  }
+}
