@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const pedidoController = require('../controllers/pedido-controller')
+const pedidoController = require('../controllers/pedido.ontroller')
 const authMiddleware = require('../middleware/auth')
 const { authRole } = require('../middleware/role')
 
