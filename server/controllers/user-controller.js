@@ -8,6 +8,17 @@ exports.createUser = async(req,res,next) => {
     try{
         const { username, password } = req.body
         const AcessCode = req.headers.acesscode
+
+        if(username.length < 1){
+            const error = new Error('Campo usuário vazio')
+            error.status = 400
+            throw error
+        }
+        if(password.length < 10){
+            const error = new Error('Palavra passe curta')
+            error.status = 400
+            throw error
+        }
         if(AcessCode != AcessCodeEnv){
             throw new ErrorException('Não está autorizado a criar uma conta',401)
         }
@@ -17,9 +28,10 @@ exports.createUser = async(req,res,next) => {
         const query = 'insert into users(name_usr,pass_usr) values (?,?)'
         const results = await mysql.execute(query, [username,passEncrypt])
         
-        return res.status(200).send({ message: results})
+        return res.status(201).send({ message: results})
     }catch(err){
-        return res.status(err.status || 500).send({ message: err })
+        console.log(err)
+        return res.status(err.status || 500).send({ message: err.message || err })
     }
 }
 
