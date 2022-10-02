@@ -26,13 +26,14 @@ module.exports = (req,res,next) => {
     };
 
     if(developHeader){
+        let hashedToken = req.headers.hashedtoken
         const signature = crypto.createHmac('sha256', SecretHash)
                             .update(Buffer.from(token), 'utf-8')
                             .digest('hex')
-        if(!signature === token){
+        if(signature != hashedToken){   
             return res.status(423).send({
                 error: 'Token modified without authorization',
-                warning: 'Account temporarily blocked'
+                warring: 'Account temporarily blocked'
             })
         }
     }

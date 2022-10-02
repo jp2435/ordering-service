@@ -3,11 +3,19 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const { ErrorException } = require('../functions/ErrorException')
+const { on } = require('stream')
 
 const AcessCodeEnv = process.env.ACESSCODE
 const Secret = process.env.SECRET
 const SecretHash = process.env.SECRET_HASH
 
+
+const hashedTokenGenerate = async(token) => {
+    const response = crypto.createHmac('sha256', SecretHash)
+    .update(Buffer.from(token), 'utf-8')
+    .digest('hex')
+    return response
+}
 
 exports.createUser = async(req,res,next) => {
     try{
@@ -54,9 +62,8 @@ exports.loginUser = async(req,res,next) => {
             const token = jwt.sign({id: results[0].id_usr, role: results[0].role}, Secret,{
                 expiresIn: '20h'
             })
-            const hashedToken = crypto.createHmac('sha256', SecretHash)
-                                    .update(Buffer.from(token), 'utf-8')
-                                    .digest('hex')
+            
+            const hashedToken = await hashedTokenGenerate(token)
 
             const response = {
                 message: 'Autenticação realizado com sucesso',
@@ -66,12 +73,14 @@ exports.loginUser = async(req,res,next) => {
                     url: req.originalUrl
                 }
             }
-            res.headers.hashedtoken = hashedToken
-            return res.status(200).send({ message: 'Autenticação realizado com sucesso', token: token})
+            
+            res.set('Hashed-token', hashedToken)
+            console.log(hashedToken)
+            return res.status(200).send(response)
         }else{
             throw new ErrorException('Falha na autenticação', 404)
         }
     }catch(err){
-        return res.status(err.status || 500).send({ message: err })
+        return res.status(err.status || 500).send({ message: err.message || err })
     }
 }
