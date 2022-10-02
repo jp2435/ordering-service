@@ -1,8 +1,13 @@
 const mysql = require('../mysql')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
 const { ErrorException } = require('../functions/ErrorException')
+
 const AcessCodeEnv = process.env.ACESSCODE
+const Secret = process.env.SECRET
+const SecretHash = process.env.SECRET_HASH
+
 
 exports.createUser = async(req,res,next) => {
     try{
@@ -46,9 +51,22 @@ exports.loginUser = async(req,res,next) => {
         }
         
         if(await bcrypt.compareSync(password,results[0].pass_usr)){
-            const token = jwt.sign({id: results[0].id_usr, role: results[0].role},process.env.SECRET,{
+            const token = jwt.sign({id: results[0].id_usr, role: results[0].role}, Secret,{
                 expiresIn: '20h'
             })
+            const hashedToken = crypto.createHmac('sha256', SecretHash)
+                                    .update(Buffer.from(token), 'utf-8')
+                                    .digest('hex')
+
+            const response = {
+                message: 'Autenticação realizado com sucesso',
+                token,
+                request: {
+                    type: 'POST',
+                    url: req.originalUrl
+                }
+            }
+            res.headers.hashedtoken = hashedToken
             return res.status(200).send({ message: 'Autenticação realizado com sucesso', token: token})
         }else{
             throw new ErrorException('Falha na autenticação', 404)

@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto')
 const SecretEnv = process.env.SECRET
+const SecretHash = process.env.SECRET_HASH
 
 module.exports = (req,res,next) => {
     const authHeader = req.headers.authorization
+    const developHeader = req.headers.develop
     if(!authHeader){
         return res.status(401).send({
             error: 'No token provided'
@@ -21,6 +24,18 @@ module.exports = (req,res,next) => {
             error: 'Token malformatted'
         });
     };
+
+    if(developHeader){
+        const signature = crypto.createHmac('sha256', SecretHash)
+                            .update(Buffer.from(token), 'utf-8')
+                            .digest('hex')
+        if(!signature === token){
+            return res.status(423).send({
+                error: 'Token modified without authorization',
+                warning: 'Account temporarily blocked'
+            })
+        }
+    }
     jwt.verify(token, SecretEnv, (err,decoded) => {
         if(err) return res.status(401).send({error: 'Token invalid'});
 
